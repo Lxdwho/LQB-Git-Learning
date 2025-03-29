@@ -1,0 +1,50 @@
+		int judge=0,flag=0;
+		for(int i=1;i<9;i++)
+		{
+			for(int j=0;j<4;j++)
+			{
+				if(car[0].car_num[j] != car[i].car_num[j] || car[0].car_type[j] != car[i].car_type[j]) judge = i;
+			}
+		}
+		if(judge != 0) //存在该车，返回费用，删除数据
+		{
+			car[judge].exit = 0;
+			int hours;
+			double money;
+			
+			if(car[0].car_type[0] == 'C') money = money_c * hours;
+			else if(car[0].car_type[0] == 'V') money = money_v * hours;
+			else flag = 1;
+			if(flag == 0) 
+			{
+				sprintf(text,"%s:%s:%d:%.2f",car[0].car_type,car[0].car_num,hours,money);
+				HAL_UART_Transmit(&huart1,(unsigned char *)text,18,50);
+			}
+		}
+		else if(sum-num_C-num_V>0) //不存在该车，更新数据
+		{
+			int kflag=0;
+			for(int i=1;i<9;i++)
+			{
+				if(car[i].exit == 0) 
+				{
+					kflag = i;
+					break;
+				}
+				if(car[0].car_type[0] == 'C') num_C++;
+				else if(car[0].car_type[0] == 'V') num_V++;
+				else flag = 1;
+				if(flag == 0) 
+				{
+					sscanf(rxdata,"%4s:%4s:%8s",car[kflag].car_type,car[kflag].car_num,car[kflag].car_time);
+					car[kflag].exit = 1;
+				}
+			}
+		}
+		else HAL_UART_Transmit(&huart1,(unsigned char *)"Error",5,50);
+	}
+	else if(rxp != 0 && rxp != 20)
+	{
+		HAL_UART_Transmit(&huart1,(unsigned char *)"Error",5,50);
+		rxp = 0;
+	}
